@@ -1,3 +1,7 @@
 #include <stdio.h>
 
-// the entry point of the program
+int main(void)
+{
+    printf("C HTTP server\n");
+    return 0;
+}
