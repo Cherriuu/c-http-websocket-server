@@ -1,31 +1,18 @@
-# C HTTP/WebSocket Server
+## Current Status
 
-An event-driven HTTP/1.1 and WebSocket server built from scratch in C.
+Implemented:
+- TCP server setup and client acceptance
+- HTTP/1.1 request-line parsing
+- GET requests
+- Static file serving from `public/`
+- MIME type detection
+- Basic status-code handling
+- Path traversal protection
+- Per-client connection state and buffers
 
-The project explores low-level networking by implementing HTTP request parsing, static file serving, persistent connections, non-blocking I/O, and WebSocket communication directly on top of TCP sockets.
-
-## Planned Features
-
-- HTTP/1.1 request parsing
-- Static file serving
-- HTTP keep-alive
-- Non-blocking sockets
-- Linux `epoll` event loop
-- Partial read and write handling
-- Per-connection state management
+In progress:
+- Non-blocking I/O
+- Event-driven connection handling
+- Linux epoll integration
+- Persistent HTTP connections
 - WebSocket upgrade and framing
-- Real-time broadcast chat
-- Request and connection resource limits
-
-## Tech
-
-- C
-- POSIX sockets
-- TCP/IP
-- HTTP/1.1
-- WebSockets
-- Linux `epoll`
-
-## Status
-
-In development.
