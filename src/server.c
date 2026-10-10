@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include "connection.h"
 
 #define PORT 8080
 #define BACKLOG 128
@@ -63,12 +64,20 @@ int server_start(void)
             continue;
         }
 
-        handle_http_request(client_fd);
+        Connection connection;
 
-        close(client_fd);
+        connection_init(&connection, client_fd);
+
+        printf(
+            "Accepted client on fd %d\n",
+            connection.fd
+        );
+
+        handle_http_request(connection.fd);
+
+        connection.state = CONNECTION_CLOSED;
+
+        close(connection.fd);
     }
-
-    close(server_fd);
-
     return 0;
 }
