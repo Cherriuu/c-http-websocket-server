@@ -3,28 +3,30 @@
 
 #include <stddef.h>
 
-#define CONNECTION_BUFFER_SIZE 8192
+#define INPUT_BUFFER_SIZE 8192
+#define OUTPUT_BUFFER_SIZE 65536
 
 typedef enum {
-    CONNECTION_READING,
-    CONNECTION_WRITING,
-    CONNECTION_CLOSED
+    CONN_READING,
+    CONN_WRITING,
+    CONN_CLOSED
 } ConnectionState;
 
 typedef struct {
     int fd;
-
     ConnectionState state;
 
-    char input_buffer[CONNECTION_BUFFER_SIZE];
+    char input[INPUT_BUFFER_SIZE];
     size_t input_length;
 
-    char output_buffer[CONNECTION_BUFFER_SIZE];
+    char output[OUTPUT_BUFFER_SIZE];
     size_t output_length;
     size_t output_sent;
+
+    int keep_alive;
 } Connection;
 
-void connection_init(Connection *connection, int fd);
-void connection_reset(Connection *connection);
+void connection_init(Connection *c, int fd);
+void connection_reset(Connection *c);
 
 #endif

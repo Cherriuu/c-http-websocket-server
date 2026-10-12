@@ -1,46 +1,24 @@
 #include "connection.h"
 
-#include <string.h>
-
-void connection_init(Connection *connection, int fd)
+void connection_init(Connection *c, int fd)
 {
-    connection->fd = fd;
-    connection->state = CONNECTION_READING;
+    c->fd = fd;
+    c->state = CONN_READING;
 
-    connection->input_length = 0;
-    connection->output_length = 0;
-    connection->output_sent = 0;
+    c->input_length = 0;
+    c->output_length = 0;
+    c->output_sent = 0;
 
-    memset(
-        connection->input_buffer,
-        0,
-        sizeof(connection->input_buffer)
-    );
-
-    memset(
-        connection->output_buffer,
-        0,
-        sizeof(connection->output_buffer)
-    );
+    c->keep_alive = 0;
 }
 
-void connection_reset(Connection *connection)
+void connection_reset(Connection *c)
 {
-    connection->state = CONNECTION_READING;
+    c->state = CONN_READING;
 
-    connection->input_length = 0;
-    connection->output_length = 0;
-    connection->output_sent = 0;
+    c->input_length = 0;
+    c->output_length = 0;
+    c->output_sent = 0;
 
-    memset(
-        connection->input_buffer,
-        0,
-        sizeof(connection->input_buffer)
-    );
-
-    memset(
-        connection->output_buffer,
-        0,
-        sizeof(connection->output_buffer)
-    );
+    c->keep_alive = 0;
 }

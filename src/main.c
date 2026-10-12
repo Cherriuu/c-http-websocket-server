@@ -3,6 +3,7 @@
 
 int main(void)
 {
+
     printf("Starting C HTTP server...\n");
 
     if (server_start() == -1) {
