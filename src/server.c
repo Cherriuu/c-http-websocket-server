@@ -1,5 +1,6 @@
-#include "server.h"
 
+#include "server.h"
+#include "http.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -23,6 +24,7 @@ int server_start(void) {
 
     // used to store the address of the server
     struct sockaddr_in address = {0};
+
     // configure the address structure
     address.sin_family = AF_INET;
     // listen in on port 8080
@@ -42,9 +44,13 @@ int server_start(void) {
         close(server_fd);
         return -1;
     }
-    else {
-        printf("Server listening on port %d\n", PORT);
-    }
+
+    printf("Server listening on port %d\n", PORT);
+
+    // keep track of server metrics across client connections
+    size_t total_connections = 0;
+    size_t total_bytes_received = 0;
+    size_t total_bytes_sent = 0;
 
     // server should keep accepting clients in an infinite loop
     while (1) {
@@ -55,9 +61,11 @@ int server_start(void) {
             perror("accept failed");
             continue; // continue to the next iteration of the loop
         }
-        else {
-            printf("Accepted a connection\n");
-        }
+
+        printf("Accepted a connection\n");
+
+        // increment the total number of accepted connections
+        total_connections++;
 
         // store incoming bytes
         char buffer[1024];
@@ -77,17 +85,35 @@ int server_start(void) {
             continue; // continue to the next iteration of the loop
         }
 
+        // increment the total number of bytes received
+        total_bytes_received += (size_t)bytes_received;
+
         // null-terminate the received data
         buffer[bytes_received] = '\0';
 
         // print the received data to the console
         printf("Received data:\n%s\n", buffer);
 
+        // store the parsed HTTP request
+        HttpRequest request = {0};
+
+        // parse the incoming HTTP request line
+        int result = http_parse_request_line(buffer, (size_t)bytes_received, &request);
+
+        if (result == -1) {
+            printf("Invalid HTTP request\n");
+        } else {
+            printf("Method: %s\n", request.method);
+            printf("Path: %s\n", request.path);
+            printf("Version: %s\n", request.version);
+        }
+
         // response to send back to the client
         const char *response =
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: text/plain\r\n"
             "Content-Length: 13\r\n"
+            "Connection: close\r\n"
             "\r\n"
             "Hello, World!";
 
@@ -97,8 +123,17 @@ int server_start(void) {
         if (bytes_sent == -1) {
             perror("send failed");
         } else {
+            // increment the total number of bytes sent
+            total_bytes_sent += (size_t)bytes_sent;
             printf("Sent %zd bytes to client\n", bytes_sent);
         }
+
+        // print the cumulative server metrics
+        printf("\n--- Server Metrics ---\n");
+        printf("Total connections: %zu\n", total_connections);
+        printf("Total bytes received: %zu\n", total_bytes_received);
+        printf("Total bytes sent: %zu\n", total_bytes_sent);
+        printf("----------------------\n\n");
 
         // close the client socket after handling the connection
         close(client_fd);
@@ -106,5 +141,6 @@ int server_start(void) {
 
     // close the server socket when done
     close(server_fd);
+
     return 0;
 }

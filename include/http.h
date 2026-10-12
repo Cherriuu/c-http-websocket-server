@@ -17,8 +17,18 @@ typedef struct {
     char version[HTTP_VERSION_MAX];
 } HttpRequest;
 
+typedef enum {
+    HTTP_OK = 200,
+    HTTP_BAD_REQUEST = 400,
+    HTTP_NOT_FOUND = 404,
+    HTTP_METHOD_NOT_ALLOWED = 405
+} HttpStatus;
+
 // parses an HTTP request line into an HttpRequest structure
 // returns 0 on success, -1 on failure
 int http_parse_request_line(const char *data, size_t length, HttpRequest *request);
+int http_build_response(HttpStatus status, char *buffer, size_t buffer_size);
+
+HttpStatus http_get_status(const HttpRequest *request);
 
 #endif
