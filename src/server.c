@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <string.h>
 
 // which port will the server listen on
 #define PORT 8080
@@ -58,7 +59,46 @@ int server_start(void) {
             printf("Accepted a connection\n");
         }
 
-        receive_and_handle_client(client_fd);
+        // store incoming bytes
+        char buffer[1024];
+
+        // receive data from the client and reserve space for a null terminator
+        ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+
+        if (bytes_received == -1) {
+            perror("recv failed");
+            close(client_fd);
+            continue; // continue to the next iteration of the loop
+        }
+
+        if (bytes_received == 0) {
+            printf("Client closed the connection\n");
+            close(client_fd);
+            continue; // continue to the next iteration of the loop
+        }
+
+        // null-terminate the received data
+        buffer[bytes_received] = '\0';
+
+        // print the received data to the console
+        printf("Received data:\n%s\n", buffer);
+
+        // response to send back to the client
+        const char *response =
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/plain\r\n"
+            "Content-Length: 13\r\n"
+            "\r\n"
+            "Hello, World!";
+
+        // send the response to the client
+        ssize_t bytes_sent = send(client_fd, response, strlen(response), 0);
+
+        if (bytes_sent == -1) {
+            perror("send failed");
+        } else {
+            printf("Sent %zd bytes to client\n", bytes_sent);
+        }
 
         // close the client socket after handling the connection
         close(client_fd);
@@ -66,4 +106,5 @@ int server_start(void) {
 
     // close the server socket when done
     close(server_fd);
+    return 0;
 }
